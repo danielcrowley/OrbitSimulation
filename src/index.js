@@ -16,7 +16,6 @@ import { Gui } from "./gui"
 import { loadTexture } from "./common-utils"
 import GaiaSky from "./assets/Gaia_EDR3_darkened.png"
 
-//import Satelite_model from "url:./assets/GEO_Assembly.gltf"
 
 
 global.THREE = THREE
@@ -107,7 +106,7 @@ let app = {
     let solarfarmGEO = new THREE.SphereGeometry(0.1, 32, 32); // Small sphere
     let solarfarmMat = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
     this.solarfarm = new THREE.Mesh(solarfarmGEO, solarfarmMat);
-    this.solarfarm.position.set(...LonLatToCart(9, params.solarFarmLocation.lon,params.solarFarmLocation.lat,true))
+    this.solarfarm.position.set(...LonLatToCart(params.EarthRadius, params.solarFarmLocation.lon,params.solarFarmLocation.lat,true))
     
     this.earth.group.add(this.solarfarm)
 
@@ -120,11 +119,9 @@ let app = {
         var url = "" + new URL( './assets/GEOSat.gltf', import.meta.url );
 
     loader.load(url, function(gltf) {
-  //     // This function is called once the model is  loaded
-  //     // gltf.scene contains the scene graph for the loaded model
-  //    this.satelliteGroup = new THREE.Group()
+      this.satelliteGroup = new THREE.Group()
        gltf.scene.scale.set(1, 1, 1);
-       this.satelite=gltf.scene;
+       this.satellite=gltf.scene;
        gltf.scene.position.set(...LonLatToCart(params.geosynchronousAltitude, params.solarFarmLocation.lon,params.solarFarmLocation.lat,true)); // Adjust accordingly
        scene.add(gltf.scene);
       //  this.satelliteGroup.add(gltf.scene); // Assuming this.satelliteGroup is where you want to add your model
@@ -134,16 +131,17 @@ let app = {
       // Create the laser beam
       const laserMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
       const laserGeometry = new THREE.BufferGeometry().setFromPoints([
-          this.satelite.position,
+          this.satellite.position,
           new THREE.Vector3(0,0,0) // End at the Earth's center
         ]);
       const laser = new THREE.Line(laserGeometry, laserMaterial);
-      scene.add(laser);
+      this.satelliteGroup.add(laser);
+      scene.add(this.satelliteGroup)
   }, undefined, function(error) {
       // This function is called if an error occurs
       console.error('An error happened while loading the GLTF model:', error);
   });
-
+    
     // Set the satellite's position to be geosynchronous
 
 
@@ -176,17 +174,14 @@ let app = {
   // @param {number} elapsed - total time elapsed since app start
   updateScene(interval, elapsed) {
     
-    this.solarfarm.position.set(...LonLatToCart(params.EarthRadius, params.solarFarmLocation.lon, params.solarFarmLocation.lat,true))
+    //this.solarfarm.position.set(...LonLatToCart(params.EarthRadius, params.solarFarmLocation.lon, params.solarFarmLocation.lat,true))
     this.controls.update()
     //this.stats1.update()
     
 
-    // use rotateY instead of rotation.y so as to rotate by axis Y local to each mesh
-
-    // this.satelliteGroup.rotateY()
     
-    this.sunLight.position.set(...LonLatToCart(params.SunOrbit,DegtoLon((-elapsed / params.EarthPeriod * 360) % 360),0,true));
-    this.sunLight.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
+    // this.sunLight.position.set(...LonLatToCart(params.SunOrbit,DegtoLon((-elapsed / params.EarthPeriod * 360) % 360),0,true));
+    // this.sunLight.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
 
     // camera.position.set(...LonLatToCart(30,0,-DegtoLon((elapsed / 10 * 360) % 360),true));
     // camera.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
@@ -195,6 +190,11 @@ let app = {
     // camera.position.set(this.satelliteGroup.position.x,this.satelliteGroup.position.y,this.satelliteGroup.position.z)
 
     this.earth.update(interval)
+    this.earth.group.rotateY(2*Math.PI/(params.EarthPeriod/interval))
+    this.earth.clouds.rotateY(2*Math.PI/(params.EarthPeriod/interval)/10)
+
+    // this.satelliteGroup.position.set(...LonLatToCart(params.geosynchronousAltitude,DegtoLon((-elapsed / params.EarthPeriod * 360) % 360),0,true));
+    // this.satelliteGroup.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
   }
 }
 

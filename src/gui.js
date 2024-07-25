@@ -11,7 +11,7 @@ export const Gui = (scene, camera, container,params)=>{
     // gui.add(params, "metalness", 0.0, 1.0, 0.05).onChange((val) => {
     //   earthMat.metalness = val
     // }).name("Ocean Metalness")
-    gui.add(params, "EarthPeriod", 1, 100.0, 1).name("Rotation Period")
+    gui.add(params, "EarthPeriod", 1, 30.0, 1).name("Rotation Period")
     gui.add(params.solarFarmLocation, "lon", -180, 180, 0.1).name("Longitude")
     gui.add(params.solarFarmLocation, "lat", -90, 90, 0.1).name("Latitude")
     

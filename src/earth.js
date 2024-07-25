@@ -179,11 +179,11 @@ export class Earth {
           // The offset n / 2π would be passed into the shader program via the uniform variable: uv_xOffset.
           // We do offset % 1 because the value of 1 for uv.x means full circle,
           // whenever uv_xOffset is larger than one, offsetting 2π radians is like no offset at all.
-          let offset = (interval * 0.005 * this.params.speedFactor) / (2 * Math.PI)
+          let offset = (2*Math.PI/(this.params.EarthPeriod/interval))
           shader.uniforms.uv_xOffset.value += offset % 1
         }
 
-        // this.group.rotateY(interval * 0.005 * params.speedFactor)
-        this.clouds.rotateY(interval * 0.005 * this.params.speedFactor)
+        // // this.group.rotateY(interval * 0.005 * params.speedFactor)
+        // this.clouds.rotateY(interval * 0.005 * this.params.speedFactor)
     }
 }
