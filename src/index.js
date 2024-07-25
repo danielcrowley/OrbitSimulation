@@ -42,7 +42,7 @@ const params = {
   atmOpacity: { value: 0.7 },
   atmPowFactor: { value: 4.1 },
   atmMultiplier: { value: 9.5 },
-  solarFarmLocation: {lat:12.46, lon:130.8444},//{lat:-100.4637, lon:130.8444} 12.4637° S, 130.8444
+  solarFarmLocation: {lat:-12.46, lon:130.8444},//{lat:-100.4637, lon:130.8444} 12.4637° S, 130.8444
   cameraSatelliteOffset: {r:0.1, lon:-0.1, lat:0.1},
   geosynchronousAltitude: 35.786, // in Earth radii (not kilometers for simplicity)
 }
