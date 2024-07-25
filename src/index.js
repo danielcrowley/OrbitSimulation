@@ -40,12 +40,16 @@ const params = {
   speedFactor: 20.0, // rotation speed of the earth
   EarthPeriod:10, // one revolution in seconds
   EarthRotation:23.5,
-  metalness: 0.1,
+  EarthRadius: 6.371, //kkm
+  SunOrbit: 151.2*1000, // in million km
+  CloudAltitude: 0.005, //kkm
+  AtmosphereAltitude: 0.01, //kkm
+  metalness: 0.3,
   atmOpacity: { value: 0.7 },
   atmPowFactor: { value: 4.1 },
   atmMultiplier: { value: 9.5 },
-  solarFarmLocation: {lat:-40, lon:-155},//{lat:-100.4637, lon:130.8444}
-  geosynchronousAltitude: 3.5786*10, // in Earth radii (not kilometers for simplicity)
+  solarFarmLocation: {lat:12.46, lon:130.8444},//{lat:-100.4637, lon:130.8444} 12.4637° S, 130.8444
+  geosynchronousAltitude: 35.786, // in Earth radii (not kilometers for simplicity)
 }
 
 
@@ -85,9 +89,9 @@ let app = {
     this.controls
 
     // adding a virtual sun using directional light
-    this.dirLight = new THREE.DirectionalLight(0xffffff, params.sunIntensity)
-    this.dirLight.position.set(-50, 0, 30)
-    scene.add(this.dirLight)
+    this.sunLight = new THREE.DirectionalLight(0xffffff, params.sunIntensity)
+    this.sunLight.position.set(...LonLatToCart(params.SunOrbit,0,0,true))
+    scene.add(this.sunLight)
 
     // // adding satellite laser beam
     // this.satBeam = new THREE.DirectionalLight(0xffffff, params.beamIntensity)
@@ -124,11 +128,11 @@ let app = {
     // earth's axial tilt is 23.5 degrees
     
     
-    let earthGeo = new THREE.SphereGeometry(10, 64, 64)
+    let earthGeo = new THREE.SphereGeometry(params.EarthRadius, 64, 64)
     let earthMat = new THREE.MeshStandardMaterial({
       map: albedoMap,
       bumpMap: bumpMap,
-      bumpScale: 0.03, // must be really small, if too high even bumps on the back side got lit up
+      bumpScale: 0.3, // must be really small, if too high even bumps on the back side got lit up
       roughnessMap: oceanMap, // will get reversed in the shaders
       metalness: params.metalness, // gets multiplied with the texture values from metalness map
       metalnessMap: oceanMap,
@@ -138,19 +142,19 @@ let app = {
     this.earth = new THREE.Mesh(earthGeo, earthMat)
    this.group.add(this.earth)
     
-    let cloudGeo = new THREE.SphereGeometry(10.05, 64, 64)
+    let cloudGeo = new THREE.SphereGeometry(params.EarthRadius+params.CloudAltitude, 64, 64)
     let cloudsMat = new THREE.MeshStandardMaterial({
       alphaMap: cloudsMap,
       transparent: true,
     })
     this.clouds = new THREE.Mesh(cloudGeo, cloudsMat)
-   this.group.add(this.clouds)
+   //this.group.add(this.clouds)
     
     // set initial rotational position of earth to get a good initial angle
     // this.earth.rotateY(0)
     // this.clouds.rotateY(-0.3)
 
-    let atmosGeo = new THREE.SphereGeometry(12.5, 64, 64)
+    let atmosGeo = new THREE.SphereGeometry(params.EarthRadius+params.AtmosphereAltitude, 64, 64)
     let atmosMat = new THREE.ShaderMaterial({
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
@@ -166,12 +170,11 @@ let app = {
     this.atmos = new THREE.Mesh(atmosGeo, atmosMat)
    this.group.add(this.atmos)
 
-    let solarfarmGEO = new THREE.SphereGeometry(0.5, 32, 32); // Small sphere
+    let solarfarmGEO = new THREE.SphereGeometry(0.1, 32, 32); // Small sphere
     let solarfarmMat = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
     this.solarfarm = new THREE.Mesh(solarfarmGEO, solarfarmMat);
-    this.solarfarm.position.set(10, params.solarFarmLocation.lon, params.solarFarmLocation.lat)
-    console.log(this.solarfarm.position)
-  
+    this.solarfarm.position.set(...LonLatToCart(9, params.solarFarmLocation.lon,params.solarFarmLocation.lat,true))
+    
     this.group.add(this.solarfarm)
 
 
@@ -321,14 +324,14 @@ let app = {
     // GUI controls
     const gui = new dat.GUI()
     gui.add(params, "sunIntensity", 0.0, 5.0, 0.1).onChange((val) => {
-      this.dirLight.intensity = val
+      this.sunLight.intensity = val
     }).name("Sun Intensity")
     gui.add(params, "metalness", 0.0, 1.0, 0.05).onChange((val) => {
       earthMat.metalness = val
     }).name("Ocean Metalness")
     gui.add(params, "speedFactor", 0.1, 100.0, 0.1).name("Rotation Speed")
-    gui.add(params.solarFarmLocation, "lon", -180, 180, 1.0).name("Longitude")
-    gui.add(params.solarFarmLocation, "lat", -180, 180, 1.0).name("Latitude")
+    gui.add(params.solarFarmLocation, "lon", -180, 180, 0.1).name("Longitude")
+    gui.add(params.solarFarmLocation, "lat", -180, 180, 0.1).name("Latitude")
 
     gui.add(params.atmOpacity, "value", 0.0, 1.0, 0.05).name("atmOpacity")
     gui.add(params.atmPowFactor, "value", 0.0, 20.0, 0.1).name("atmPowFactor")
@@ -347,7 +350,7 @@ let app = {
   // @param {number} elapsed - total time elapsed since app start
   updateScene(interval, elapsed) {
     
-    this.solarfarm.position.set(...LonLatToCart(10, params.solarFarmLocation.lon, params.solarFarmLocation.lat,true))
+    this.solarfarm.position.set(...LonLatToCart(params.EarthRadius, params.solarFarmLocation.lon, params.solarFarmLocation.lat,true))
     this.controls.update()
     this.stats1.update()
     
@@ -357,8 +360,8 @@ let app = {
     this.clouds.rotateY(interval * 0.005 * params.speedFactor)
     // this.satelliteGroup.rotateY()
     
-    this.dirLight.position.set(...LonLatToCart(30,0,DegtoLon((elapsed / 10 * 360) % 360),true));
-    this.dirLight.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
+    this.sunLight.position.set(...LonLatToCart(params.SunOrbit,DegtoLon((-elapsed / params.EarthPeriod * 360) % 360),0,true));
+    this.sunLight.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
 
     // camera.position.set(...LonLatToCart(30,0,-DegtoLon((elapsed / 10 * 360) % 360),true));
     // camera.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
