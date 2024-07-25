@@ -13,3 +13,7 @@ export const LonLatToCart = (radius, lon, lat, return_array) => {
 export const DegtoLon = (deg)=>{
     return deg > 180 ? deg - 360 : deg;
 } 
+
+// export const OffsetFrom = (Object, {dis,x_angle,y_angle})=>{ 
+//     return LonLatToCart(Object.position+params.cameraSatelliteOffset.r, params.solarFarmLocation.lon+params.cameraSatelliteOffset.lon,params.solarFarmLocation.lat+params.cameraSatelliteOffset.lat,false)
+//  }

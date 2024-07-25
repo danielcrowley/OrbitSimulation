@@ -12,7 +12,9 @@
 //         const loader = new GLTFLoader();
 //         var url = "" + new URL( './assets/GEOSat.gltf', import.meta.url );
 
-//         loader.load(url, function(gltf) {
+//         await loader.loadAsync(url)
+
+//         function(gltf) {
 //             //this.satelite = gltf.scene;
 //             gltf.scene.scale.set(1, 1, 1);
 //             gltf.scene.position.set(...LonLatToCart(this.params.geosynchronousAltitude, this.params.solarFarmLocation.lon,this.params.solarFarmLocation.lat,true)); // Adjust accordingly

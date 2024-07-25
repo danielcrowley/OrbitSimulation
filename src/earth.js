@@ -1,5 +1,5 @@
 import { updateLoadingProgressBar } from "./core-utils"
-import { loadTexture } from "./common-utils"
+import { loadTexture, loadModel } from "./common-utils"
 import Albedo from "./assets/Albedo.jpg"
 import Bump from "./assets/Bump.jpg"
 import Clouds from "./assets/Clouds.png"
@@ -31,7 +31,6 @@ export class Earth {
         const lightsMap = await loadTexture(NightLights)
         // await updateLoadingProgressBar(0.6)
 
-        
 
         this.group = new THREE.Group()
         // earth's axial tilt is 23.5 degrees
@@ -166,7 +165,7 @@ export class Earth {
     
             // need save to userData.shader in order to enable our code to update values in the shader uniforms,
             // reference from https://github.com/mrdoob/three.js/blob/master/examples/webgl_materials_modified.html
-            earthMat.userData.shader = shader
+           // earthMat.userData.shader = shader
         }
     return this
     };
@@ -179,7 +178,7 @@ export class Earth {
           // The offset n / 2π would be passed into the shader program via the uniform variable: uv_xOffset.
           // We do offset % 1 because the value of 1 for uv.x means full circle,
           // whenever uv_xOffset is larger than one, offsetting 2π radians is like no offset at all.
-          let offset = (2*Math.PI/(this.params.EarthPeriod/interval))
+          let offset = (2*Math.PI/(this.params.EarthPeriod/interval)/10)
           shader.uniforms.uv_xOffset.value += offset % 1
         }
 

@@ -13,7 +13,7 @@ import { Gui } from "./gui"
 
 
 // Other deps
-import { loadTexture } from "./common-utils"
+import { loadTexture, loadModel } from "./common-utils"
 import GaiaSky from "./assets/Gaia_EDR3_darkened.png"
 
 
@@ -31,10 +31,11 @@ const params = {
   sunIntensity: 1.3, // brightness of the sun
   beamIntensity: 3,
   speedFactor: 20.0, // rotation speed of the earth
-  EarthPeriod:10, // one revolution in seconds
+  EarthPeriod:20, // one revolution in seconds
   EarthRotation: 23.5,
   EarthRadius: 6.371, //kkm
-  SunOrbit: 151.2*1000, // in million km
+  SunOrbit: 151.2*1000, // in thousand km
+  SunRadius: 696.34, // in thousand km
   CloudAltitude: 0.005, //kkm
   AtmosphereAltitude: 0.01, //kkm
   metalness: 0.3,
@@ -64,7 +65,7 @@ let renderer = createRenderer({ antialias: true }, (_renderer) => {
 
 // Create the camera
 // Pass in fov, near, far and camera position respectively
-let camera = createCamera(45, 0.1, 1000, LonLatToCart(params.geosynchronousAltitude+params.cameraSatelliteOffset.r, params.solarFarmLocation.lon+params.cameraSatelliteOffset.lon,params.solarFarmLocation.lat+params.cameraSatelliteOffset.lat,false))
+let camera = createCamera(45, 0.1, 1000000, LonLatToCart(params.geosynchronousAltitude+params.cameraSatelliteOffset.r, params.solarFarmLocation.lon+params.cameraSatelliteOffset.lon,params.solarFarmLocation.lat+params.cameraSatelliteOffset.lat,false))
 
 
 
@@ -85,7 +86,14 @@ let app = {
     // adding a virtual sun using directional light
     this.sunLight = new THREE.DirectionalLight(0xffffff, params.sunIntensity)
     this.sunLight.position.set(...LonLatToCart(params.SunOrbit,0,0,true))
+    let SunGeo = new THREE.SphereGeometry(params.SunRadius, 32, 32); // Small sphere
+    let SunMat = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
+    this.Sun = new THREE.Mesh(SunGeo, SunMat);
+    this.Sun.position.set(...LonLatToCart(params.SunOrbit,0,0,true))
+
     scene.add(this.sunLight)
+    scene.add(this.Sun)
+
 
     // // adding satellite laser beam
     // this.satBeam = new THREE.DirectionalLight(0xffffff, params.beamIntensity)
@@ -115,58 +123,47 @@ let app = {
 
   //   //Add Satellite
   //   // Create the satellite
-        const loader = new GLTFLoader();
-        var url = "" + new URL( './assets/GEOSat.gltf', import.meta.url );
+    const loader = new GLTFLoader();
+    var url = "" + new URL( './assets/GEOSat.gltf', import.meta.url );
+    this.satelliteGroup = new THREE.Group()
+    let glfft = await loadModel(url)
+    this.satellite = glfft.model
+    // this.satellite = loader.load(url, function(gltf) { 
+    //   gltf.scene.scale.set(1, 1, 1);
+    //   return gltf.scene;
+    // });
+    //this.satellite.scale.set(1, 1, 1);
+    this.satellite.position.set(...LonLatToCart(params.geosynchronousAltitude, params.solarFarmLocation.lon,params.solarFarmLocation.lat,true)); // Adjust accordingly
+    this.satellite.rotateX(Math.PI/2)
+    this.satellite.rotateZ(-Math.PI/2)
 
-    loader.load(url, function(gltf) {
-      this.satelliteGroup = new THREE.Group()
-       gltf.scene.scale.set(1, 1, 1);
-       this.satellite=gltf.scene;
-       gltf.scene.position.set(...LonLatToCart(params.geosynchronousAltitude, params.solarFarmLocation.lon,params.solarFarmLocation.lat,true)); // Adjust accordingly
-       scene.add(gltf.scene);
-      //  this.satelliteGroup.add(gltf.scene); // Assuming this.satelliteGroup is where you want to add your model
-  
-  //     console.log(gltf.scene.position)
-  //     console.log(this.satelliteGroup.position)
-      // Create the laser beam
-      const laserMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
-      const laserGeometry = new THREE.BufferGeometry().setFromPoints([
-          this.satellite.position,
-          new THREE.Vector3(0,0,0) // End at the Earth's center
-        ]);
-      const laser = new THREE.Line(laserGeometry, laserMaterial);
-      this.satelliteGroup.add(laser);
-      scene.add(this.satelliteGroup)
-  }, undefined, function(error) {
-      // This function is called if an error occurs
-      console.error('An error happened while loading the GLTF model:', error);
-  });
+    this.satelliteGroup.add(this.satellite);
     
-    // Set the satellite's position to be geosynchronous
-
-
-    // Create the ground position marker
-    // const GroundPositionMarkerMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
-    // const GroundPositionMarkerGeometry = new THREE.BufferGeometry().setFromPoints([
-    //     this.satellite.position,
-    //     new THREE.Vector3(0,0,0) // End at the Earth's center
-    //   ]);
-    // const GroundPositionMarker = new THREE.Line(GroundPositionMarkerGeometry, GroundPositionMarkerMaterial);
-    // this.satelliteGroup.add(GroundPositionMarker)
-
-
-
-
+    // Create the laser beam
+    const laserMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    this.lasertarget = new THREE.Vector3(0,0,0)
+    this.lasersource = new THREE.Vector3(0,0,0)
+    const laserGeometry = new THREE.BufferGeometry().setFromPoints([
+        this.lasertarget,
+        this.lasersource // End at the Earth's center
+      ]);
+    this.laser = new THREE.Line(laserGeometry, laserMaterial);
     
+    scene.add(this.laser)
+    scene.add(this.satelliteGroup)
+    
+      
 
 
     
     Gui(scene, camera, document.body,params)
 
     
+    let testg = new THREE.SphereGeometry(0.01, 32, 32); // Small sphere
+    let testm = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
+    this.test = new THREE.Mesh(testg, testm);
 
-
-    
+    scene.add(this.test)
 
     await updateLoadingProgressBar(1.0, 100)
   },
@@ -177,6 +174,9 @@ let app = {
     //this.solarfarm.position.set(...LonLatToCart(params.EarthRadius, params.solarFarmLocation.lon, params.solarFarmLocation.lat,true))
     this.controls.update()
     //this.stats1.update()
+
+
+
     
 
     
@@ -189,12 +189,35 @@ let app = {
 
     // camera.position.set(this.satelliteGroup.position.x,this.satelliteGroup.position.y,this.satelliteGroup.position.z)
 
-    this.earth.update(interval)
     this.earth.group.rotateY(2*Math.PI/(params.EarthPeriod/interval))
     this.earth.clouds.rotateY(2*Math.PI/(params.EarthPeriod/interval)/10)
 
-    // this.satelliteGroup.position.set(...LonLatToCart(params.geosynchronousAltitude,DegtoLon((-elapsed / params.EarthPeriod * 360) % 360),0,true));
-    // this.satelliteGroup.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
+    this.satellite.position.set(...LonLatToCart(params.geosynchronousAltitude,
+                                                      DegtoLon(((elapsed / params.EarthPeriod * 360) % 360))+30,
+                                                      0,
+                                                      true));
+    this.satelliteGroup.lookAt(this.sunLight.position); // Ensure the light always points towards the Earth
+    this.solarfarm.getWorldPosition(this.lasertarget)
+    this.satellite.getWorldPosition(this.lasersource)
+    scene.remove(this.laser)
+    const laserMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    // this.lasertarget = new THREE.Vector3(0,0,0)
+    //this.lasersource = new THREE.Vector3(50,0,0)
+    const laserGeometry = new THREE.BufferGeometry().setFromPoints([
+        this.lasertarget,
+        this.lasersource // End at the Earth's center
+      ]);
+    this.laser = new THREE.Line(laserGeometry, laserMaterial);
+    scene.add(this.laser)
+
+    this.test.position.set(this.lasersource.x,this.lasersource.y,this.lasersource.z)
+
+    // camera.position.set(...LonLatToCart(params.geosynchronousAltitude+1,
+    //                             DegtoLon((elapsed / params.EarthPeriod * 360) % 360)+120,
+    //                             0.1,
+    //                             true));                              
+    // camera.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
+
   }
 }
 
