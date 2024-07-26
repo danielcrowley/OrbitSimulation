@@ -15,7 +15,8 @@ import { Gui } from "./gui"
 // Other deps
 import { loadTexture, loadModel } from "./common-utils"
 import GaiaSky from "./assets/Gaia_EDR3_darkened.png"
-
+import vertexShader from "./shaders/vertex.glsl"
+import fragmentShader from "./shaders/fragment.glsl"
 
 
 global.THREE = THREE
@@ -35,7 +36,7 @@ const params = {
   EarthRotation: 23.5,
   EarthRadius: 6.371, //kkm
   SunOrbit: 151.2*1000, // in thousand km
-  SunRadius: 696.34, // in thousand km
+  SunRadius: 6960.34, // in thousand km
   CloudAltitude: 0.005, //kkm
   AtmosphereAltitude: 0.01, //kkm
   metalness: 0.3,
@@ -85,11 +86,25 @@ let app = {
 
     // adding a virtual sun using directional light
     this.sunLight = new THREE.DirectionalLight(0xffffff, params.sunIntensity)
-    this.sunLight.position.set(...LonLatToCart(params.SunOrbit,0,0,true))
-    let SunGeo = new THREE.SphereGeometry(params.SunRadius, 32, 32); // Small sphere
-    let SunMat = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
-    this.Sun = new THREE.Mesh(SunGeo, SunMat);
-    this.Sun.position.set(...LonLatToCart(params.SunOrbit,0,0,true))
+    this.sunLight.position.set(...LonLatToCart(params.SunOrbit,90,0,true))
+    
+    
+
+    let SunGeo = new THREE.SphereGeometry(params.SunRadius, 64, 64)
+    let SunMat = new THREE.ShaderMaterial({
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+    uniforms: {
+        atmOpacity: params.atmOpacity,
+        atmPowFactor: params.atmPowFactor,
+        atmMultiplier: params.atmMultiplier
+    },
+    // notice that by default, Three.js uses NormalBlending, where if your opacity of the output color gets lower, the displayed color might get whiter
+    blending: THREE.AdditiveBlending, // works better than setting transparent: true, because it avoids a weird dark edge around the earth
+    side: THREE.BackSide // such that it does not overlays on top of the earth; this points the normal in opposite direction in vertex shader
+    })
+    this.Sun = new THREE.Mesh(SunGeo, SunMat)
+    this.Sun.position.set(...LonLatToCart(params.SunOrbit,90,0,true))
 
     scene.add(this.sunLight)
     scene.add(this.Sun)
@@ -193,7 +208,7 @@ let app = {
     this.earth.clouds.rotateY(2*Math.PI/(params.EarthPeriod/interval)/10)
 
     this.satellite.position.set(...LonLatToCart(params.geosynchronousAltitude,
-                                                      DegtoLon(((elapsed / params.EarthPeriod * 360) % 360))+30,
+                                                      DegtoLon(((elapsed / params.EarthPeriod * 360) % 360))+params.solarFarmLocation.lon-180,
                                                       0,
                                                       true));
     this.satelliteGroup.lookAt(this.sunLight.position); // Ensure the light always points towards the Earth
@@ -212,11 +227,11 @@ let app = {
 
     this.test.position.set(this.lasersource.x,this.lasersource.y,this.lasersource.z)
 
-    // camera.position.set(...LonLatToCart(params.geosynchronousAltitude+1,
-    //                             DegtoLon((elapsed / params.EarthPeriod * 360) % 360)+120,
-    //                             0.1,
-    //                             true));                              
-    // camera.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
+    camera.position.set(...LonLatToCart(params.geosynchronousAltitude+1,
+                                (DegtoLon((elapsed / params.EarthPeriod * 360) % 360)+params.solarFarmLocation.lon)+0.4,
+                                0.4,
+                                true));                              
+    camera.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
 
   }
 }
