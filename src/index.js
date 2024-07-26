@@ -37,7 +37,7 @@ const params = {
   EarthRadius: 6.371, //kkm
   SunOrbit: 151.2*1000, // in thousand km
   SunRadius: 6960.34, // in thousand km
-  CloudAltitude: 0.005, //kkm
+  CloudAltitude: 0.008, //kkm
   AtmosphereAltitude: 0.01, //kkm
   metalness: 0.3,
   atmOpacity: { value: 0.7 },

@@ -62,7 +62,7 @@ export class Earth {
         // this.earth.rotateY(0)
         // this.clouds.rotateY(-0.3)
 
-        let atmosGeo = new THREE.SphereGeometry(this.params.EarthRadius+this.params.AtmosphereAltitude, 64, 64)
+        let atmosGeo = new THREE.SphereGeometry(this.params.EarthRadius+this.params.AtmosphereAltitude+1.5, 64, 64)
         let atmosMat = new THREE.ShaderMaterial({
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
