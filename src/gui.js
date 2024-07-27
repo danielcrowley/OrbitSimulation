@@ -2,7 +2,7 @@ import * as dat from 'dat.gui'
 import Stats from "three/examples/jsm/libs/stats.module"
 import {LonLatToCart,DegtoLon} from "./utils.js"
 
-export const Gui = (scene, camera, container,params)=>{
+export const Gui = (scene, camera, container,params,orbitalParams)=>{
     // GUI controls
     const gui = new dat.GUI()
     // gui.add(params, "sunIntensity", 0.0, 5.0, 0.1).onChange((val) => {
@@ -24,6 +24,16 @@ export const Gui = (scene, camera, container,params)=>{
     gui.add(params.cameraSatelliteOffset, "lat", -2, 2, 0.1).onChange((val) => {
       camera.position.set(...LonLatToCart(params.geosynchronousAltitude+params.cameraSatelliteOffset.r, params.solarFarmLocation.lon,params.solarFarmLocation.lat-val,true))
     }).name("lat")
+
+
+    const Orbitfolder = gui.addFolder('Orbit')
+    Orbitfolder.add(orbitalParams, "e", 0, 1, 0.01).name("Eccentricity")
+    Orbitfolder.add(orbitalParams, "i", -180, 180, 0.1).name("Inclination")
+    Orbitfolder.add(orbitalParams, "Ω", 0, 360, 0.1).name("Right Ascension of Ascending Node")
+    Orbitfolder.add(orbitalParams, "ω", 0, 360, 0.1).name("Argument of Perigee")
+    // Orbitfolder.add(orbitalParams, "M0", 0, 360, 0.1).name("Mean Anomaly at Epoch")
+    
+    Orbitfolder.open()
 
     // gui.add(params.atmOpacity, "value", 0.0, 1.0, 0.05).name("atmOpacity")
     // gui.add(params.atmPowFactor, "value", 0.0, 20.0, 0.1).name("atmPowFactor")

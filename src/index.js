@@ -7,7 +7,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 // Core boilerplate code deps
 import { createCamera, createRenderer, runApp, updateLoadingProgressBar } from "./core-utils"
-import { LonLatToCart,DegtoLon } from "./utils"
+import { LonLatToCart,DegtoLon,getIncrementedPosition } from "./utils"
 import { Earth } from "./earth"
 import { Gui } from "./gui"
 
@@ -45,9 +45,16 @@ const params = {
   atmMultiplier: { value: 9.5 },
   solarFarmLocation: {lat:-12.46, lon:130.8444},//{lat:-100.4637, lon:130.8444} 12.4637° S, 130.8444
   cameraSatelliteOffset: {r:0.1, lon:-0.1, lat:0.1},
-  geosynchronousAltitude: 35.786, // in Earth radii (not kilometers for simplicity)
+  geosynchronousAltitude: 42.3, // in Earth radii (not kilometers for simplicity)
 }
-
+const orbitalParams = {
+  a: params.geosynchronousAltitude, // Semi-major axis in km
+  e: 0, // Eccentricity
+  i: 0, // Inclination in degrees
+  Ω: 10, // Right ascension of ascending node in degrees
+  ω: 0, // Argument of perigee in degrees
+  M0: 0, // Mean anomaly at epoch in degrees
+};
 
 /**************************************************
  * 1. Initialize core threejs components
@@ -160,7 +167,7 @@ let app = {
     this.lasersource = new THREE.Vector3(0,0,0)
     const laserGeometry = new THREE.BufferGeometry().setFromPoints([
         this.lasertarget,
-        this.lasersource // End at the Earth's center
+        this.lasersource 
       ]);
     this.laser = new THREE.Line(laserGeometry, laserMaterial);
     
@@ -171,14 +178,14 @@ let app = {
 
 
     
-    Gui(scene, camera, document.body,params)
+    Gui(scene, camera, document.body,params,orbitalParams)
 
     
-    let testg = new THREE.SphereGeometry(0.01, 32, 32); // Small sphere
-    let testm = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
-    this.test = new THREE.Mesh(testg, testm);
+    this.markerg = new THREE.SphereGeometry(0.1, 32, 32); // Small sphere
+    this.markerm = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
+    
 
-    scene.add(this.test)
+   
 
     await updateLoadingProgressBar(1.0, 100)
   },
@@ -206,11 +213,12 @@ let app = {
 
     this.earth.group.rotateY(2*Math.PI/(params.EarthPeriod/interval))
     this.earth.clouds.rotateY(2*Math.PI/(params.EarthPeriod/interval)/10)
-
-    this.satellite.position.set(...LonLatToCart(params.geosynchronousAltitude,
-                                                      DegtoLon(((elapsed / params.EarthPeriod * 360) % 360))+params.solarFarmLocation.lon-180,
-                                                      0,
-                                                      true));
+    let satellitePosition = getIncrementedPosition(orbitalParams, elapsed, 2*Math.PI/params.EarthPeriod) // Mean motion in degrees per second))
+    this.satellite.position.set(satellitePosition.x,satellitePosition.y,satellitePosition.z)
+    // this.satellite.position.set(...LonLatToCart(params.geosynchronousAltitude,
+    //                                                   DegtoLon(((elapsed / params.EarthPeriod * 360) % 360))+params.solarFarmLocation.lon-180,
+    //                                                   0,
+    //                                                   true));
     this.satelliteGroup.lookAt(this.sunLight.position); // Ensure the light always points towards the Earth
     this.solarfarm.getWorldPosition(this.lasertarget)
     this.satellite.getWorldPosition(this.lasersource)
@@ -224,14 +232,15 @@ let app = {
       ]);
     this.laser = new THREE.Line(laserGeometry, laserMaterial);
     scene.add(this.laser)
+    let marker = new THREE.Mesh(this.markerg, this.markerm);
+    marker.position.set(this.lasersource.x,this.lasersource.y,this.lasersource.z)
+    scene.add(marker)
 
-    this.test.position.set(this.lasersource.x,this.lasersource.y,this.lasersource.z)
-
-    camera.position.set(...LonLatToCart(params.geosynchronousAltitude+1,
-                                (DegtoLon((elapsed / params.EarthPeriod * 360) % 360)+params.solarFarmLocation.lon)+0.4,
-                                0.4,
-                                true));                              
-    camera.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
+    // camera.position.set(...LonLatToCart(params.geosynchronousAltitude+1,
+    //                             (DegtoLon((elapsed / params.EarthPeriod * 360) % 360)+params.solarFarmLocation.lon)+0.4,
+    //                             0.4,
+    //                             true));                              
+    // camera.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the light always points towards the Earth
 
   }
 }
