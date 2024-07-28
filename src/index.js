@@ -18,6 +18,8 @@ import GaiaSky from "./assets/Gaia_EDR3_darkened.png"
 import vertexShader from "./shaders/vertex.glsl"
 import fragmentShader from "./shaders/fragment.glsl"
 
+//import SatelliteModel from "./assets/GeoSat.gltf"
+
 
 global.THREE = THREE
 // previously this feature is .legacyMode = false, see https://www.donmccurdy.com/2020/06/17/color-management-in-threejs/
@@ -146,7 +148,7 @@ let app = {
   //   //Add Satellite
   //   // Create the satellite
     const loader = new GLTFLoader();
-    var url = "" + new URL( './assets/GEOSat.gltf', import.meta.url );
+    var url = "" + new URL( './assets/GeoSat.gltf', import.meta.url );
     this.satelliteGroup = new THREE.Group()
     let glfft = await loadModel(url)
     this.satellite = glfft.model
