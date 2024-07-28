@@ -165,7 +165,7 @@ export class Earth {
     
             // need save to userData.shader in order to enable our code to update values in the shader uniforms,
             // reference from https://github.com/mrdoob/three.js/blob/master/examples/webgl_materials_modified.html
-           // earthMat.userData.shader = shader
+           earthMat.userData.shader = shader
         }
     return this
     };
