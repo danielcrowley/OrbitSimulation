@@ -155,12 +155,12 @@ export class Earth {
             // we also clamp the shadowValue to a minimum of 0.2 so it doesn't get too dark
             
             diffuseColor.rgb *= max(1.0 - cloudsMapValue, 0.2 );
-    
+            
             // adding small amount of atmospheric coloring to make it more realistic
             // fine tune the first constant for stronger or weaker effect
-            // float intensity = 1.4 - dot( geometryNormal, vec3( 0.0, 0.0, 1.0 ) );
-            // vec3 atmosphere = vec3( 0.3, 0.6, 1.0 ) * pow(intensity, 5.0);
-            // diffuseColor.rgb += atmosphere;
+            float intensity = 1.4 - dot( geometryNormal, vec3( 0.0, 0.0, 1.0 ) );
+            vec3 atmosphere = vec3( 0.3, 0.6, 1.0 ) * pow(intensity, 5.0);
+            diffuseColor.rgb += atmosphere;
             `)
     
             // need save to userData.shader in order to enable our code to update values in the shader uniforms,

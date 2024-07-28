@@ -1,5 +1,6 @@
 // reference from https://youtu.be/vM8M4QloVL0?si=CKD5ELVrRm3GjDnN
 varying vec3 vNormal;
+varying vec3 geometryNormal;
 varying vec3 eyeVector;
 uniform float atmOpacity;
 uniform float atmPowFactor;
