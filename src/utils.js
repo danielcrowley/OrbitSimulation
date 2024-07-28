@@ -46,13 +46,13 @@ const calculateOrbitalPosition = (a, e, i, Ω, ω, M) => {
     const y_orb = r * Math.sin(ν);
 
     // Rotation matrices
-    const R1 = new THREE.Matrix4().makeRotationZ(degToRad(Ω));
+    const R1 = new THREE.Matrix4().makeRotationY(degToRad(Ω)); // z and y are swapped to match the coordinate system
     const R2 = new THREE.Matrix4().makeRotationX(degToRad(i));
-    const R3 = new THREE.Matrix4().makeRotationZ(degToRad(ω));
+    const R3 = new THREE.Matrix4().makeRotationY(degToRad(ω)); // z and y are swapped to match the coordinate system
 
   
     // Position vector in the orbital plane
-    const positionOrbitalPlane = new THREE.Vector3(x_orb,0,-y_orb);
+    const positionOrbitalPlane = new THREE.Vector3(x_orb,0,-y_orb); // z and y are swapped to match the coordinate system
 
     // Transform to the inertial frame
     positionOrbitalPlane.applyMatrix4(R1).applyMatrix4(R2).applyMatrix4(R3);

@@ -31,7 +31,7 @@ export const Gui = (scene, camera, container,params,orbitalParams)=>{
     Orbitfolder.add(orbitalParams, "i", -180, 180, 0.1).name("Inclination")
     Orbitfolder.add(orbitalParams, "Ω", 0, 360, 0.1).name("Right Ascension of Ascending Node")
     Orbitfolder.add(orbitalParams, "ω", 0, 360, 0.1).name("Argument of Perigee")
-    // Orbitfolder.add(orbitalParams, "M0", 0, 360, 0.1).name("Mean Anomaly at Epoch")
+    Orbitfolder.add(orbitalParams, "M0", 0, 2*Math.PI, 0.1).name("Mean Anomaly at Epoch")
     
     Orbitfolder.open()
 
