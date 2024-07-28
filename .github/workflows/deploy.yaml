@@ -6,7 +6,7 @@ on:
       - main  # Change this to your default branch if it's not 'main'
 
 jobs:
-  build & Deploy:
+  buildDeploy:
     runs-on: ubuntu-latest
 
     steps:
