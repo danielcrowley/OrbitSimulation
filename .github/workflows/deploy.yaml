@@ -6,7 +6,7 @@ on:
       - main  # Change this to your default branch if it's not 'main'
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,11 +21,17 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+  build:
     - name: Build the project
       run: npm run build  # Adjust this if your build command is different
-
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
+  
+  deploy:
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
       with:
-        github_token: ${{ secrets.OrbitalSimulationDeployKey }}
-        publish_dir: ./dist  # Adjust this to your build output directory
+        path: './dist'
+    - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
