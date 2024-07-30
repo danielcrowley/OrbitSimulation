@@ -10,6 +10,25 @@ export const LonLatToCart = (radius, lon, lat, return_array) => {
     if (return_array)  return [res.x, res.y, res.z];
     else  return res;
 }
+
+export const CartToLonLat = (x, y, z, return_array) => {
+    const radius = Math.sqrt(x * x + y * y + z * z);
+    const latRad = Math.acos(y / radius);
+    const lonRad = Math.atan2(z, -x);
+
+    const lat = 90 - (latRad * 180 / Math.PI);
+    const lon = (lonRad * 180 / Math.PI) - 180;
+
+    let res = {
+        radius: radius,
+        lon: lon,
+        lat: lat
+    };
+
+    if (return_array) return [res.lon, res.lat];
+    else return res;
+}
+
 export const DegtoLon = (deg)=>{
     return deg > 180 ? deg - 360 : deg;
 } 

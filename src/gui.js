@@ -16,15 +16,16 @@ export const Gui = (scene, camera, container,params,orbitalParams)=>{
     gui.add(params.solarFarmLocation, "lat", -90, 90, 0.1).name("Latitude")
     
     gui.add(params.cameraSatelliteOffset, "r", -2, 2, 0.1).onChange((val) => {
-      camera.position.set(...LonLatToCart(params.geosynchronousAltitude+val, params.solarFarmLocation.lon,params.solarFarmLocation.lat,true))
+     // camera.position.set(...LonLatToCart(params.geosynchronousAltitude+val, params.solarFarmLocation.lon,params.solarFarmLocation.lat,true))
+     
     }).name("r")
     gui.add(params.cameraSatelliteOffset, "lon", -2, 2, 0.1).onChange((val) => {
-      camera.position.set(...LonLatToCart(params.geosynchronousAltitude+params.cameraSatelliteOffset.r, params.solarFarmLocation.lon+val,params.solarFarmLocation.lat,true))
+      //camera.position.set(...LonLatToCart(params.geosynchronousAltitude+params.cameraSatelliteOffset.r, params.solarFarmLocation.lon+val,params.solarFarmLocation.lat,true))
     }).name("lon")
     gui.add(params.cameraSatelliteOffset, "lat", -2, 2, 0.1).onChange((val) => {
-      camera.position.set(...LonLatToCart(params.geosynchronousAltitude+params.cameraSatelliteOffset.r, params.solarFarmLocation.lon,params.solarFarmLocation.lat-val,true))
+      //camera.position.set(...LonLatToCart(params.geosynchronousAltitude+params.cameraSatelliteOffset.r, params.solarFarmLocation.lon,params.solarFarmLocation.lat-val,true))
     }).name("lat")
-
+    gui.add(params, 'fixedToSatellite').name('Lock view to Satellite')
 
     const Orbitfolder = gui.addFolder('Orbit')
     Orbitfolder.add(orbitalParams, "e", 0, 1, 0.01).name("Eccentricity")
