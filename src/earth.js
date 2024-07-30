@@ -126,7 +126,7 @@ export class Earth {
                 // for lit side of the earth, the reverse happens thus emissiveColor would be multiplied with 0.
                 // The smoothstep is to smoothen the change between night and day
                 
-                emissiveColor *= 1.0 - smoothstep(-0.02, 0.0, dot(geometryNormal, directionalLights[0].direction));
+                emissiveColor *= 1.0 - smoothstep(-0.02, 0.0, dot(vNormal, directionalLights[0].direction));
                 
                 totalEmissiveRadiance *= emissiveColor.rgb;
     
@@ -158,7 +158,7 @@ export class Earth {
             
             // adding small amount of atmospheric coloring to make it more realistic
             // fine tune the first constant for stronger or weaker effect
-            float intensity = 1.4 - dot( geometryNormal, vec3( 0.0, 0.0, 1.0 ) );
+            float intensity = 1.4 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) );
             vec3 atmosphere = vec3( 0.3, 0.6, 1.0 ) * pow(intensity, 5.0);
             diffuseColor.rgb += atmosphere;
             `)
